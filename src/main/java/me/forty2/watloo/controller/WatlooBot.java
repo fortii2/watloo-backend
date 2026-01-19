@@ -1,8 +1,10 @@
 package me.forty2.watloo.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import me.forty2.watloo.service.MessageService;
+import me.forty2.watloo.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
@@ -13,15 +15,26 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Slf4j
-@Component
+@Controller
 public class WatlooBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
     private final String token;
+
     private final TelegramClient telegramClient;
 
-    public WatlooBot(@Value("${telegram.bot.token}") String token) {
+    private final UserService userService;
+
+    private final MessageService messageService;
+
+
+    public WatlooBot(@Value("${telegram.bot.token}") String token,
+                     UserService userService,
+                     MessageService messageService) {
+
         this.token = token;
-        telegramClient = new OkHttpTelegramClient(getBotToken());
+        this.telegramClient = new OkHttpTelegramClient(getBotToken());
+        this.userService = userService;
+        this.messageService = messageService;
     }
 
     @Override
@@ -37,20 +50,21 @@ public class WatlooBot implements SpringLongPollingBot, LongPollingSingleThreadU
     @Override
     public void consume(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            // Set variables
-            String message_text = update.getMessage().getText();
-            long chat_id = update.getMessage().getChatId();
 
-            SendMessage message = SendMessage // Create a message object
-                    .builder()
-                    .chatId(chat_id)
-                    .text(message_text)
-                    .build();
+            userService.syncUser(update.getMessage().getFrom());
+
+            SendMessage handled =
+                    messageService.handle(
+                            update.getMessage().getChatId(),
+                            update.getMessage().getText()
+                    );
+
             try {
-                telegramClient.execute(message); // Sending our message object to user
+                telegramClient.execute(handled);
             } catch (TelegramApiException e) {
                 log.error("@error: {}", e.getMessage());
             }
         }
+
     }
 }

@@ -5,17 +5,10 @@
 - clone code
 - Search `@BotFather` in telegram
 - following the help info to create a telegram bot
+- copy your bot token from botFather, inject token into your environment variable by using `export TELEGRAM_BOT_TOKEN={replace-your-token}`, if you are not using macOS/Linux, please inject it mannually
 - open this project as workspace
-- create a new file called `secrets.yml` in `resources` directory
-- paste this code segment into `secrets.yml`
-  ```yml
-  telegram:
-    bot:
-      token: {REPLACE_ME_HERE}
-  ```
-- copy your bot token from botFather, replace the token in `secrets.yml`
-- right click `WatlooApplication`, run
-- talk to your bot, something should happen
+- coding, right click `WatlooApplication` to run server locally and fully testing (also can use docker build to do so)
+- push & pull request
 
 ## dev workflow
 
