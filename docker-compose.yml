@@ -1,0 +1,17 @@
+services:
+  watloo-bot:
+    image: ghcr.io/fortii2/watloo:latest
+    container_name: watloo-bot
+    restart: always
+
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+
+    volumes:
+      - ./data:/app/data
+
+    deploy:
+      resources:
+        limits:
+          memory: 800M
