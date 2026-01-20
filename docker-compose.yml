@@ -6,7 +6,7 @@ services:
 
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
 
     volumes:
       - ./data:/app/data
