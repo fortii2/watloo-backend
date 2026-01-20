@@ -45,34 +45,33 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            if ! command -v git &> /dev/null; then
-              echo "Installing Git..."
-              sudo dnf install git -y
+            if ! command -v git &> /dev/null; then 
+              sudo dnf install git -y; 
             fi
-
+            
             if ! command -v docker &> /dev/null; then
-              echo "Installing Docker..."
               sudo dnf install docker -y
               sudo systemctl start docker
               sudo systemctl enable docker
               sudo usermod -aG docker ec2-user
             fi
-
+            
             if ! docker compose version &> /dev/null; then
-              echo "Installing Docker Compose Plugin..."
-              sudo dnf install docker-compose-plugin -y
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+              sudo mkdir -p /usr/local/lib/docker/cli-plugins
+              sudo ln -s /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-compose
             fi
             
-            mkdir -p ~/watloo-bot
+            if [ ! -d "$HOME/watloo-bot/.git" ]; then
+              rm -rf ~/watloo-bot
+              git clone https://github.com/fortii2/watloo.git ~/watloo-bot
+            fi
+            
             cd ~/watloo-bot
+            git pull origin main
+            
             echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > .env
-            
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/fortii2/watloo.git .
-            else
-              git pull origin main
-            fi
-            
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull
             docker compose up -d
