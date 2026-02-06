@@ -27,7 +27,11 @@ public class UserService {
                         .build());
     }
 
-    public void save(BotUser botUser){
+    public void save(BotUser botUser) {
         userRepository.save(botUser);
+    }
+
+    public BotUser getByTelegramId(Long telegramUserId) {
+        return userRepository.findById(telegramUserId).orElseThrow();
     }
 }
