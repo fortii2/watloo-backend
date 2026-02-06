@@ -9,4 +9,6 @@ import java.util.List;
 public interface TermRepository extends JpaRepository<Term, String> {
 
     List<Term> findTop4ByTermEndDateAfterOrderByTermBeginDateAsc(LocalDateTime now);
+
+    Term findByName(String termName);
 }

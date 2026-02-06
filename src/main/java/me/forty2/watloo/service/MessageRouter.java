@@ -34,21 +34,14 @@ public class MessageRouter {
         BotUser botUser = userService.getOne(user);
         UserState userState = botUser.getUserState();
 
-        switch (userState) {
-            case AWAITING_TERM_SELECTION -> {
-                SendMessage sendMessage = courseService.bindTerm(chatId, messageText, user);
-                sendMessage.setChatId(chatId);
-                return sendMessage;
-            }
-
-            case AWAITING_COURSE_INPUT -> {
-                // TODO
-                return null;
-            }
-        }
-
-        // TODO
-        return null;
+        return switch (userState) {
+            case AWAITING_TERM_SELECTION -> courseService.bindTerm(chatId, messageText, user);
+            case AWAITING_COURSE_NAME_INPUT -> courseService.handleCourseName(chatId, messageText, user);
+            case AWAITING_LOCATION_INPUT -> courseService.handleLocation(chatId, messageText, user);
+            case AWAITING_DAY_SELECTION -> courseService.handleDay(chatId, messageText, user);
+            case AWAITING_TIME_INPUT -> courseService.handleTime(chatId, messageText, user);
+            case AWAITING_PROF_INPUT -> courseService.saveCourse(chatId, messageText, user);
+        };
     }
 
     private SendMessage commandHandler(Long chatId, String messageText, User user) {
