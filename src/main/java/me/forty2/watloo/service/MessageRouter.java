@@ -19,6 +19,8 @@ public class MessageRouter {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private RestaurantService restaurantService;
 
     public SendMessage router(Long chatId, String messageText, User user) {
 
@@ -41,6 +43,7 @@ public class MessageRouter {
             case AWAITING_DAY_SELECTION -> courseService.handleDay(chatId, messageText, user);
             case AWAITING_TIME_INPUT -> courseService.handleTime(chatId, messageText, user);
             case AWAITING_PROF_INPUT -> courseService.saveCourse(chatId, messageText, user);
+            case AWAITING_RESTAURANT_REVIEW -> handleReview(chatId, messageText, user);
         };
     }
 
@@ -72,8 +75,9 @@ public class MessageRouter {
 
         } else if (messageText.startsWith("/add_course")) {
             return courseService.registerCourse(chatId, user);
-
-        } else {
+        } else if (messageText.startsWith("/restaurant_reviews")) {
+            return restaurantService.reviews(chatId, user);
+        }else {
             String response = utilityService.defaultHandler();
             return SendMessage
                     .builder()
