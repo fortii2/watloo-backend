@@ -43,7 +43,7 @@ public class MessageRouter {
             case AWAITING_DAY_SELECTION -> courseService.handleDay(chatId, messageText, user);
             case AWAITING_TIME_INPUT -> courseService.handleTime(chatId, messageText, user);
             case AWAITING_PROF_INPUT -> courseService.saveCourse(chatId, messageText, user);
-            case AWAITING_RESTAURANT_REVIEW -> handleReview(chatId, messageText, user);
+            case AWAITING_RESTAURANT_REVIEW -> restaurantService.handleReview(chatId, messageText, user);
         };
     }
 
