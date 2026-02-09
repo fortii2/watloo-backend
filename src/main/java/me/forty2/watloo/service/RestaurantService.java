@@ -301,7 +301,7 @@ private void handleDishes(
         }
     }
 
-    private SendMessage handleReview(Long chatId, String messageText, User user) {
+    public SendMessage handleReview(Long chatId, String messageText, User user) {
         if ("Submit a review".equals(messageText)) {
             return submitReview(chatId, user);
 
