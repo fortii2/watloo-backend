@@ -65,13 +65,15 @@ jobs:
             
             if [ ! -d "$HOME/watloo-bot/.git" ]; then
               rm -rf ~/watloo-bot
-              git clone https://github.com/fortii2/watloo.git ~/watloo-bot
+              git clone https://github.com/${{ github.repository }}.git ~/watloo-bot
             fi
             
             cd ~/watloo-bot
             git pull origin main
             
             echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > .env
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "WATERLOO_OPEN_KEY=${{ secrets.WATERLOO_OPEN_KEY }}" >> .env
+            echo "WATLOO_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> .env
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull
             docker compose up -d
