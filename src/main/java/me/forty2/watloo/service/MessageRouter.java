@@ -22,6 +22,9 @@ public class MessageRouter {
     @Autowired
     private RestaurantService restaurantService;
 
+    @Autowired
+    private CommandCorrectionService commandCorrectionService;
+
     public SendMessage router(Long chatId, String messageText, User user) {
 
         if (messageText.startsWith("/")) {
@@ -48,6 +51,8 @@ public class MessageRouter {
     }
 
     private SendMessage commandHandler(Long chatId, String messageText, User user) {
+        messageText = commandCorrectionService.check(messageText);
+
         if (messageText.startsWith("/start")) {
 
             String response = utilityService.startHandler();
