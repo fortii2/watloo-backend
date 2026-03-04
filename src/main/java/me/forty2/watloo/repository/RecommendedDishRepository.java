@@ -18,8 +18,8 @@ public interface RecommendedDishRepository extends JpaRepository<RecommendedDish
 
     // 查某条 review 推荐了哪些菜
     List<RecommendedDish> findByReview(Review review);
-    
+
     // 查某家餐厅的所有推荐菜
-    @Query("SELECT rd FROM RecommendedDish rd WHERE rd.dish.restaurant = :restaurant")
+    @Query("SELECT rd FROM RecommendedDish rd JOIN FETCH rd.dish d WHERE d.restaurant = :restaurant")
     List<RecommendedDish> findByRestaurant(Restaurant restaurant);
 }
