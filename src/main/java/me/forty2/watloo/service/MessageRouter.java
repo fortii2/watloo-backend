@@ -22,9 +22,6 @@ public class MessageRouter {
     @Autowired
     private RestaurantService restaurantService;
 
-    @Autowired
-    private CommandCorrectionService commandCorrectionService;
-
     public SendMessage router(Long chatId, String messageText, User user) {
 
         if (messageText.startsWith("/")) {
@@ -47,14 +44,10 @@ public class MessageRouter {
             case AWAITING_TIME_INPUT -> courseService.handleTime(chatId, messageText, user);
             case AWAITING_PROF_INPUT -> courseService.saveCourse(chatId, messageText, user);
             case AWAITING_RESTAURANT_REVIEW -> restaurantService.handleReview(chatId, messageText, user);
-            case AWAITING_VIEW_REVIEWS_OPTION -> restaurantService.handleViewReviewsInput(chatId, messageText, user);
-            case AWAITING_REVIEW_SEARCH_QUERY -> restaurantService.viewSearch(chatId, messageText, user);
         };
     }
 
     private SendMessage commandHandler(Long chatId, String messageText, User user) {
-        messageText = commandCorrectionService.check(messageText);
-
         if (messageText.startsWith("/start")) {
 
             String response = utilityService.startHandler();
