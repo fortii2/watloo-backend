@@ -17,7 +17,7 @@ public interface NotRecommendedDishRepository extends JpaRepository<NotRecommend
 
     // 查某条 review 不推荐了哪些菜
     List<NotRecommendedDish> findByReview(Review review);
-    
+
     // 查某家餐厅的所有不推荐菜
     @Query("SELECT nd FROM NotRecommendedDish nd JOIN FETCH nd.dish d WHERE d.restaurant = :restaurant")
     List<NotRecommendedDish> findByRestaurant(Restaurant restaurant);
