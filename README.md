@@ -7,6 +7,8 @@
 - following the help info to create a telegram bot
 - copy your bot token from botFather, inject token into your environment variable by using
   `export TELEGRAM_BOT_TOKEN={replace-your-token}`, if you are not using macOS/Linux, please inject it mannually
+- get your OpenAI API key from https://platform.openai.com/api-keys, inject it by using
+  `export OPENAI_API_KEY={replace-your-key}` (used for AI command spell-check & auto-correction)
 - open this project as workspace
 - create a folder called `data` at the same level of `src` for SQLite data storage
 - coding, right click `WatlooApplication` to run server locally and fully testing (also can use docker build to do so)
