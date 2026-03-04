@@ -21,14 +21,6 @@ public class UtilityService {
                 
                 using /add_course to bind your courses based on different terms
                 
-                using /additem then follow the prompts to enter name, condition, and price
-                
-                using /items to view all available second-hand items
-                
-                using /myitems to view your posted items (shows ID for /removeitem)
-                
-                using /removeitem <id> to remove your own item
-                
                 /help for help documents
                 
                 """;

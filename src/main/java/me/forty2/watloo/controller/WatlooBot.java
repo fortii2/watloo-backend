@@ -50,32 +50,21 @@ public class WatlooBot implements SpringLongPollingBot, LongPollingSingleThreadU
     @Override
     public void consume(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            Long chatId = update.getMessage().getChatId();
+            userService.syncUser(update.getMessage().getFrom());
+
+            SendMessage handled =
+                    messageRouter.router(
+                            update.getMessage().getChatId(),
+                            update.getMessage().getText(),
+                            update.getMessage().getFrom()
+                    );
+
             try {
-                userService.syncUser(update.getMessage().getFrom());
-                SendMessage handled = messageRouter.router(
-                        chatId,
-                        update.getMessage().getText(),
-                        update.getMessage().getFrom()
-                );
-                if (handled != null) {
-                    telegramClient.execute(handled);
-                }
+                telegramClient.execute(handled);
             } catch (TelegramApiException e) {
-                log.error("Telegram API error: {}", e.getMessage());
-                sendText(chatId, "Sorry, failed to send the reply. Please try again.");
-            } catch (Exception e) {
-                log.error("Error handling message", e);
-                sendText(chatId, "Something went wrong. Please try again.");
+                log.error("@error: {}", e.getMessage());
             }
         }
-    }
 
-    private void sendText(Long chatId, String text) {
-        try {
-            telegramClient.execute(SendMessage.builder().chatId(chatId).text(text).build());
-        } catch (TelegramApiException ex) {
-            log.error("Failed to send error message: {}", ex.getMessage());
-        }
     }
 }

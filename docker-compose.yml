@@ -1,6 +1,6 @@
 services:
   watloo-bot:
-    image: ${WATLOO_IMAGE:-ghcr.io/fortii2/waterloo-backend:latest}
+    image: ghcr.io/fortii2/watloo:latest
     container_name: watloo-bot
     restart: always
 
@@ -8,7 +8,6 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - WATERLOO_OPEN_KEY=${WATERLOO_OPEN_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
 
     volumes:
       - ./data:/app/data
