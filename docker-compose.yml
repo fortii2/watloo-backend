@@ -1,6 +1,6 @@
 services:
   watloo-bot:
-    image: ${WATLOO_IMAGE:-ghcr.io/fortii2/waterloo-backend:latest}
+    image: ghcr.io/fortii2/watloo:latest
     container_name: watloo-bot
     restart: always
 
