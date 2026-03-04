@@ -22,4 +22,4 @@ once you want to contribute to this repo, please *fetch & pull* from the main br
 main branch. After coding and fully testing, you can push & create a pull request, and please waiting for at least 1
 team member to review & merge your code.
 
-also, please using meaningful branch name such as "feature-read-and-reply", "fix-correct-reply-format".
+also, please using meaningful branch name such as "feature-read-and-reply", "fix-correct-reply-format". 
