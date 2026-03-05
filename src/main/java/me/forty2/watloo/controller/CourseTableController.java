@@ -24,7 +24,8 @@ public class CourseTableController {
 
     @GetMapping("/courses")
     public ResponseEntity<List<CourseTableDTO>> getCourses(
-            @RequestHeader("X-Telegram-User-Id") Long telegramUserId) {
+            @RequestHeader("X-Telegram-User-Id") Long telegramUserId,
+            @RequestParam(value = "view", defaultValue = "week") String view) {
 
         BotUser botUser = userService.getByTelegramId(telegramUserId);
 
@@ -32,8 +33,11 @@ public class CourseTableController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        List<CourseTableDTO> courses = courseService.getUserCoursesForApi(botUser);
-
-        return ResponseEntity.ok(courses);
+        try {
+            List<CourseTableDTO> courses = courseService.getUserCoursesForApi(botUser, view);
+            return ResponseEntity.ok(courses);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

@@ -19,15 +19,18 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
 public class CourseService {
 
     private final Map<Long, CourseRegisterDTO> registrationCache = new HashMap<>();
+    private static final ZoneId API_TIME_ZONE = ZoneId.of("America/Toronto");
     @Autowired
     private UserService userService;
     @Autowired
@@ -256,9 +259,31 @@ public class CourseService {
         }
     }
 
-    public List<CourseTableDTO> getUserCoursesForApi(BotUser botUser) {
-        List<CourseTable> allCourses = courseTableRepository.findAllByUserId(botUser.getId());
-        return allCourses.stream().map(course ->
+
+    public List<CourseTableDTO> getUserCoursesForApi(BotUser botUser, String view) {
+        String normalizedView = view == null ? "week" : view.toLowerCase(Locale.ROOT);
+
+        LocalDateTime now = LocalDateTime.now(API_TIME_ZONE);
+        LocalDateTime start;
+        LocalDateTime end;
+
+        switch (normalizedView) {
+            case "today" -> {
+                start = now.toLocalDate().atStartOfDay();
+                end = start.plusDays(1).minusNanos(1);
+            }
+            case "week" -> {
+                LocalDate weekStart = now.toLocalDate().with(DayOfWeek.MONDAY);
+                start = weekStart.atStartOfDay();
+                end = start.plusDays(7).minusNanos(1);
+            }
+            default -> throw new IllegalArgumentException("view must be one of: today, week");
+        }
+
+        List<CourseTable> courses = courseTableRepository
+                .findAllByUserIdAndBeginTimeBetweenOrderByBeginTimeAsc(botUser.getId(), start, end);
+
+        return courses.stream().map(course ->
                 CourseTableDTO.builder()
                         .name(course.getSubject() + " " + course.getSubjectNumber())
                         .location(course.getLocation())
