@@ -32,6 +32,6 @@ public class UserService {
     }
 
     public BotUser getByTelegramId(Long telegramUserId) {
-        return userRepository.findById(telegramUserId).orElseThrow();
+        return userRepository.findById(telegramUserId).orElse(null);
     }
 }
