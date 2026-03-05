@@ -10,9 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CourseTableDTO {
+    private String id;
     private String name;
     private String location;
-    private String prof;
+    private String professor;
+    private Integer dayOfWeek;
+    private String date;
     private String beginTime;
     private String endTime;
 }

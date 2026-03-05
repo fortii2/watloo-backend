@@ -2,6 +2,7 @@ package me.forty2.watloo.service;
 
 import me.forty2.watloo.dto.CourseRegisterDTO;
 import me.forty2.watloo.dto.CourseTableDTO;
+import me.forty2.watloo.dto.GetCoursesResponse;
 import me.forty2.watloo.entity.BotUser;
 import me.forty2.watloo.entity.CourseTable;
 import me.forty2.watloo.entity.Term;
@@ -20,7 +21,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +35,8 @@ public class CourseService {
 
     private final Map<Long, CourseRegisterDTO> registrationCache = new HashMap<>();
     private static final ZoneId API_TIME_ZONE = ZoneId.of("America/Toronto");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     @Autowired
     private UserService userService;
     @Autowired
@@ -260,38 +266,80 @@ public class CourseService {
     }
 
 
-    public List<CourseTableDTO> getUserCoursesForApi(BotUser botUser, String view) {
-        String normalizedView = view == null ? "week" : view.toLowerCase(Locale.ROOT);
+    public GetCoursesResponse getUserCoursesForApi(BotUser botUser, String view, String date) {
+        String normalizedView = normalizeView(view);
+        LocalDate anchorDate = resolveAnchorDate(date);
 
-        LocalDateTime now = LocalDateTime.now(API_TIME_ZONE);
         LocalDateTime start;
         LocalDateTime end;
 
-        switch (normalizedView) {
-            case "today" -> {
-                start = now.toLocalDate().atStartOfDay();
-                end = start.plusDays(1).minusNanos(1);
-            }
-            case "week" -> {
-                LocalDate weekStart = now.toLocalDate().with(DayOfWeek.MONDAY);
-                start = weekStart.atStartOfDay();
-                end = start.plusDays(7).minusNanos(1);
-            }
-            default -> throw new IllegalArgumentException("view must be one of: today, week");
+        if ("day".equals(normalizedView)) {
+            start = anchorDate.atStartOfDay();
+            end = start.plusDays(1).minusNanos(1);
+        } else {
+            LocalDate weekStart = anchorDate.with(DayOfWeek.MONDAY);
+            start = weekStart.atStartOfDay();
+            end = start.plusDays(7).minusNanos(1);
         }
 
-        List<CourseTable> courses = courseTableRepository
-                .findAllByUserIdAndBeginTimeBetweenOrderByBeginTimeAsc(botUser.getId(), start, end);
+        List<CourseTableDTO> courses = courseTableRepository
+                .findAllByUserIdAndBeginTimeBetweenOrderByBeginTimeAsc(botUser.getId(), start, end)
+                .stream()
+                .filter(course -> course.getBeginTime() != null
+                        && course.getEndTime() != null
+                        && course.getEndTime().isAfter(course.getBeginTime()))
+                .map(this::toCourseTableDTO)
+                .sorted(Comparator
+                        .comparing(CourseTableDTO::getDate)
+                        .thenComparing(CourseTableDTO::getBeginTime)
+                        .thenComparing(CourseTableDTO::getName))
+                .toList();
 
-        return courses.stream().map(course ->
-                CourseTableDTO.builder()
-                        .name(course.getSubject() + " " + course.getSubjectNumber())
-                        .location(course.getLocation())
-                        .prof(course.getProf())
-                        .beginTime(course.getBeginTime().toString())
-                        .endTime(course.getEndTime().toString())
-                        .build()
+        return GetCoursesResponse.builder()
+                .view(normalizedView)
+                .timezone(API_TIME_ZONE.getId())
+                .courses(courses)
+                .build();
+    }
 
-        ).toList();
+    private String normalizeView(String view) {
+        String normalizedView = view == null ? "week" : view.toLowerCase(Locale.ROOT);
+        if (!"week".equals(normalizedView) && !"day".equals(normalizedView)) {
+            throw new IllegalArgumentException("INVALID_VIEW:view must be one of: week, day");
+        }
+        return normalizedView;
+    }
+
+    private LocalDate resolveAnchorDate(String date) {
+        if (date == null || date.isBlank()) {
+            return LocalDate.now(API_TIME_ZONE);
+        }
+
+        try {
+            return LocalDate.parse(date, DATE_FORMATTER);
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException("INVALID_DATE:date must use format YYYY-MM-DD");
+        }
+    }
+
+    private CourseTableDTO toCourseTableDTO(CourseTable course) {
+        String subject = safeString(course.getSubject());
+        String number = course.getSubjectNumber() == null ? "" : String.valueOf(course.getSubjectNumber());
+        String courseName = (subject + " " + number).trim();
+
+        return CourseTableDTO.builder()
+                .id(course.getId() == null ? "" : "c_" + course.getId())
+                .name(courseName)
+                .location(safeString(course.getLocation()))
+                .professor(safeString(course.getProf()))
+                .dayOfWeek(course.getBeginTime().getDayOfWeek().getValue())
+                .date(course.getBeginTime().toLocalDate().format(DATE_FORMATTER))
+                .beginTime(course.getBeginTime().toLocalTime().format(TIME_FORMATTER))
+                .endTime(course.getEndTime().toLocalTime().format(TIME_FORMATTER))
+                .build();
+    }
+
+    private String safeString(String value) {
+        return value == null ? "" : value;
     }
 }
