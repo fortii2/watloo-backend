@@ -23,12 +23,12 @@ public class CourseTableController {
 
     @GetMapping("/courses")
     public ResponseEntity<?> getCourses(
-            @RequestHeader(value = "X-Telegram-User-Id", required = false) Long telegramUserId,
+            @RequestParam(value = "userId", required = false) Long telegramUserId,
             @RequestParam(value = "view", defaultValue = "week") String view,
             @RequestParam(value = "date", required = false) String date) {
 
         if (telegramUserId == null) {
-            return error(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "missing X-Telegram-User-Id header");
+            return error(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "missing userId parameter");
         }
 
         BotUser botUser = userService.getByTelegramId(telegramUserId);
